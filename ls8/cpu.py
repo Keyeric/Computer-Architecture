@@ -10,7 +10,7 @@ class CPU:
         self.reg = [0x0] * 0x8
         self.ram =[0x0] * 0x100
         self.pc = 0x0
-        self.fl = 0x0
+        self.fl = 0b00000000 #LGE L: 0b00000100/0x04 G:0b00000010/0x02 E:0b00000001/0x01
         self.SP = 0x7
         self.reg[self.SP] = 0xf4
 
@@ -101,11 +101,10 @@ class CPU:
                 print(f"0x11/17: {return_addr}\n")
 
 
-            elif IR == 0x13:  # IRET
-                print(f"0x13/19: {IR}\n")
+            # elif IR == 0x13:  # IRET
+            #     print(f"0x13/19: {IR}\n")
 
-                # self.pc += 0x1
-                running= False
+            #     # self.pc += 0x1
 
             elif IR == 0x45:  # Push
                 # Decrement stack pointer           
@@ -144,14 +143,15 @@ class CPU:
 
                 self.pc += 0x2
 
-            elif IR == 0x48:  # PRA
-                print(f"0x48/72: {operand_a}\n")
+            # elif IR == 0x48:  # PRA
+            #     print(f"0x48/72: {operand_a}\n")
 
-                self.pc += 0x2
+            #     self.pc += 0x2
 
             elif IR == 0x50:  #Call
                 # Get address of the next instruction
-                return_addr = self.pc + 0x2
+                # return_addr = self.pc + 0x2
+                return_addr = operand_b
 
                 # Push that on the stack
                 self.reg[self.SP] -= 1
@@ -166,35 +166,44 @@ class CPU:
 
 
             elif IR == 0x54:  #JMP
-                print(f"0x54/84: {operand_b}\n")
+                addr = self.reg[operand_a]
 
-                self.pc += 0x2
+                self.pc = addr
+                print(f"0x54/84: {addr}\n")
 
             elif IR == 0x55:  #JEQ
-                print(f"0x55/85: {operand_b}\n")
-
-                self.pc += 0x2
+                if self.fl == 0x1:
+                    addr = self.reg[operand_a]
+                    self.pc = addr
+                    print(f"0x55/85: {addr}\n")
+                else:
+                    print(f"0x55/85: No go\n")
+                    self.pc += 0x2
 
             elif IR == 0x56:  #JNE
-                print(f"0x56/86: {operand_b}\n")
-
-                self.pc += 0x2
+                if self.fl is not 0x1 or self.fl is not 0x03 or self.fl is not 0x05:
+                    addr = self.reg[operand_a]
+                    self.pc = addr
+                    print(f"0x56/86: {addr}\n")
+                else:
+                    print(f"0x56/86: No go\n")
+                    self.pc += 0x2
 
             elif IR == 0x82:  # LDI Load Immediate
                 self.reg[operand_a] = operand_b
-                print(f"0x82/130: {operand_b}\n")
+                print(f"0x82/130: {self.reg[operand_a]}\n")
 
                 self.pc += 0x3
 
-            elif IR == 0x83:  # LD
-                print(f"0x83/131: {operand_b}\n")
+            # elif IR == 0x83:  # LD
+            #     print(f"0x83/131: {operand_b}\n")
 
-                self.pc += 0x3
+            #     self.pc += 0x3
 
-            elif IR == 0x84:  # ST
-                print(f"0x84/132: {operand_b}\n")
+            # elif IR == 0x84:  # ST
+            #     print(f"0x84/132: {operand_b}\n")
 
-                self.pc += 0x3
+            #     self.pc += 0x3
 
             elif IR == 0xA0:  #ADD A and B
                 operand_c = self.alu("ADD",operand_a, operand_b)
@@ -227,7 +236,14 @@ class CPU:
                 self.pc += 0x3
 
             elif IR == 0xA7:  # CMP
-                print(f"0xA7/167: {operand_a}\n")
+                if operand_a == operand_b:
+                    self.fl = 0x01 # E in LGE flag
+                elif operand_a < operand_b:
+                    self.fl = 0x04 # L in LGE flag
+                elif operand_a > operand_b:
+                    self.fl = 0x02 # G in LGE flag
+                
+                print(f"0xA7/167: {self.fl}\n")
 
                 self.pc += 0x3
 
