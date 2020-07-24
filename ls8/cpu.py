@@ -45,17 +45,40 @@ class CPU:
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-
+        #todo Add the ALU operations: AND OR XOR NOT SHL SHR MOD
         if op == "ADD":
             return self.reg[reg_a] + self.reg[reg_b]
+
         elif op == "SUB":
             return self.reg[reg_a] - self.reg[reg_b]
+
         elif op == "MUL":
             return self.reg[reg_a] * self.reg[reg_b]
+
         elif op == "DIV":
             return self.reg[reg_a] / self.reg[reg_b]
+
         elif op == "MOD":
             return self.reg[reg_a] % self.reg[reg_b]
+
+        elif op == "AND":
+            return self.reg[reg_a] & self.reg[reg_b]
+
+        elif op == "OR":
+            return self.reg[reg_a] | self.reg[reg_b]
+
+        elif op == "XOR":
+            return self.reg[reg_a] ^ self.reg[reg_b]
+
+        elif op == "NOT":
+            return ~self.reg[reg_a]
+
+        elif op == "SHL":
+            return self.reg[reg_a] << self.reg[reg_b]
+
+        elif op == "SHR":
+            return self.reg[reg_a] >> self.reg[reg_b]
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -86,6 +109,9 @@ class CPU:
             IR = self.ram[self.pc]
             operand_a = self.ram[self.pc + 0x1]
             operand_b = self.ram[self.pc + 0x2]
+
+            if IR == 0x0:  # NOP
+                pass
 
             if IR == 0x1:  # HALT
                 running = False
@@ -181,7 +207,7 @@ class CPU:
                     self.pc += 0x2
 
             elif IR == 0x56:  #JNE
-                if self.fl is not 0x1 or self.fl is not 0x03 or self.fl is not 0x05:
+                if self.fl is not 0b1 or self.fl is not 0b11 or self.fl is not 0b111:
                     addr = self.reg[operand_a]
                     self.pc = addr
                     print(f"0x56/86: {addr}\n")
@@ -205,6 +231,7 @@ class CPU:
 
             #     self.pc += 0x3
 
+            #todo Add the ALU operations: AND OR XOR NOT SHL SHR MOD
             elif IR == 0xA0:  #ADD A and B
                 operand_c = self.alu("ADD",operand_a, operand_b)
                 print(f"0xA0/160: {operand_c}\n")
